@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>I Choose You 💖</title>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #1a0a1f 0%, #0d0416 50%, #1f0a1a 100%);
+    overflow: hidden;
+    font-family: 'Georgia', serif;
+}
+
+canvas {
+    display: block;
+}
+
+/* Romantic Text */
+.title {
+    position: absolute;
+    top: 30px;
+    width: 100%;
+    text-align: center;
+    font-size: 48px;
+    font-weight: bold;
+    background: linear-gradient(45deg, #ff6b9d, #ffa8c5, #ff6b9d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 4px;
+    text-shadow: 0 0 30px rgba(255, 107, 157, 0.5);
+    animation: titleGlow 3s ease-in-out infinite;
+}
+
+@keyframes titleGlow {
+    0%, 100% { filter: drop-shadow(0 0 15px #ff6b9d); }
+    50% { filter: drop-shadow(0 0 25px #ff6b9d); }
+}
+
+.subtitle {
+    position: absolute;
+    top: 95px;
+    width: 100%;
+    text-align: center;
+    font-size: 20px;
+    color: #ffd5e5;
+    font-style: italic;
+    text-shadow: 0 0 10px rgba(255, 213, 229, 0.5);
+}
+
+/* Floating love text */
+.love {
+    position: absolute;
+    color: #ffb3d9;
+    font-size: 22px;
+    font-weight: bold;
+    animation: floatUp 5s ease-out forwards;
+    pointer-events: none;
+    text-shadow: 0 0 15px #ff77aa, 0 0 25px #ff77aa;
+}
+
+@keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    50% { transform: translateY(-40px) scale(1.2); }
+    100% { opacity: 0; transform: translateY(-100px) scale(0.8); }
+}
+
+/* Falling petals */
+.petal {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background: radial-gradient(ellipse at center, #ffb3d9 0%, #ff85b3 100%);
+    border-radius: 50% 0 50% 0;
+    opacity: 0.8;
+    animation: fallPetal linear forwards;
+    pointer-events: none;
+}
+
+@keyframes fallPetal {
+    0% {
+        transform: translateY(-10px) rotate(0deg);
+        opacity: 0.9;
+    }
+    100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* Hearts floating up */
+.floatingHeart {
+    position: absolute;
+    font-size: 30px;
+    animation: floatHeart 6s ease-out forwards;
+    pointer-events: none;
+    filter: drop-shadow(0 0 10px rgba(255, 107, 157, 0.6));
+}
+
+@keyframes floatHeart {
+    0% { 
+        opacity: 1; 
+        transform: translateY(0) rotate(0deg) scale(0.5);
+    }
+    50% {
+        transform: translateY(-50vh) rotate(180deg) scale(1);
+    }
+    100% { 
+        opacity: 0; 
+        transform: translateY(-100vh) rotate(360deg) scale(0.3);
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="title">I Choose You 💖</div>
+<div class="subtitle">Touch the screen to grow our love garden 🌸✨</div>
+
+<canvas id="canvas"></canvas>
+
+<!-- Soft romantic music -->
+<audio autoplay loop volume="0.3">
+    <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_0c45c79b7a.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+
+/* ---------------- ENHANCED HEART FLOWER ---------------- */
+class HeartFlower {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.targetHeight = Math.random() * 150 + 80;
+        this.grow = 0;
+        this.growSpeed = 1.5;
+        this.stemThickness = Math.random() * 2 + 2;
+        this.heartSize = Math.random() * 8 + 10;
+        this.swayOffset = Math.random() * Math.PI * 2;
+        this.swayAmount = Math.random() * 15 + 5;
+        this.leaves = [];
+        this.createLeaves();
+        this.petals = [];
+        this.petalCount = 5;
+        this.rotation = 0;
+    }
+
+    createLeaves() {
+        const leafCount = Math.floor(Math.random() * 3) + 2;
+        for (let i = 0; i < leafCount; i++) {
+            this.leaves.push({
+                position: Math.random() * 0.7 + 0.2,
+                side: Math.random() > 0.5 ? 1 : -1,
+                size: Math.random() * 15 + 10
+            });
+        }
+    }
+
+    update() {
+        if (this.grow < this.targetHeight) {
+            this.grow += this.growSpeed;
+        }
+        this.rotation += 0.01;
+    }
+
+    drawLeaf(x, y, size, rotation) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(rotation);
+        
+        ctx.fillStyle = "#5fb878";
+        ctx.beginPath();
+        ctx.ellipse(0, 0, size * 0.6, size, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.strokeStyle = "#4a9460";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, -size);
+        ctx.lineTo(0, size);
+        ctx.stroke();
+        
+        ctx.restore();
+    }
+
+    drawHeart(cx, cy, size) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(this.rotation * 0.5);
+        
+        // Gradient for depth
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 2);
+        gradient.addColorStop(0, "#ff4d88");
+        gradient.addColorStop(0.5, "#ff6b9d");
+        gradient.addColorStop(1, "#ff85b3");
+        
+        ctx.fillStyle = gradient;
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = "#ff6b9d";
+        
+        ctx.beginPath();
+        ctx.moveTo(0, size * 0.3);
+        ctx.bezierCurveTo(-size, -size * 0.5, -size * 1.8, size * 0.3, 0, size * 1.5);
+        ctx.bezierCurveTo(size * 1.8, size * 0.3, size, -size * 0.5, 0, size * 0.3);
+        ctx.fill();
+        
+        ctx.shadowBlur = 0;
+        ctx.restore();
+        
+        // Draw smaller hearts around main heart
+        for (let i = 0; i < this.petalCount; i++) {
+            const angle = (Math.PI * 2 / this.petalCount) * i + this.rotation;
+            const dist = size * 1.8;
+            const px = cx + Math.cos(angle) * dist;
+            const py = cy + Math.sin(angle) * dist;
+            
+            ctx.save();
+            ctx.translate(px, py);
+            ctx.rotate(angle);
+            
+            ctx.fillStyle = "rgba(255, 133, 179, 0.6)";
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#ff85b3";
+            
+            const smallSize = size * 0.4;
+            ctx.beginPath();
+            ctx.moveTo(0, smallSize * 0.3);
+            ctx.bezierCurveTo(-smallSize, -smallSize * 0.5, -smallSize * 1.8, smallSize * 0.3, 0, smallSize * 1.5);
+            ctx.bezierCurveTo(smallSize * 1.8, smallSize * 0.3, smallSize, -smallSize * 0.5, 0, smallSize * 0.3);
+            ctx.fill();
+            
+            ctx.shadowBlur = 0;
+            ctx.restore();
+        }
+    }
+
+    draw() {
+        const currentHeight = this.grow;
+        const sway = Math.sin(Date.now() * 0.001 + this.swayOffset) * this.swayAmount * (currentHeight / this.targetHeight);
+        
+        // Draw stem with curve
+        const gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y - currentHeight);
+        gradient.addColorStop(0, "#4a9460");
+        gradient.addColorStop(1, "#6fdc8c");
+        
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = this.stemThickness;
+        ctx.lineCap = "round";
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = "#6fdc8c";
+        
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.quadraticCurveTo(
+            this.x + sway * 0.5,
+            this.y - currentHeight * 0.5,
+            this.x + sway,
+            this.y - currentHeight
+        );
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        
+        // Draw leaves
+        this.leaves.forEach(leaf => {
+            const leafY = this.y - currentHeight * leaf.position;
+            const leafX = this.x + (sway * leaf.position) + (leaf.side * 20);
+            this.drawLeaf(leafX, leafY, leaf.size, leaf.side * 0.5);
+        });
+        
+        // Draw heart flower
+        if (currentHeight > 10) {
+            this.drawHeart(this.x + sway, this.y - currentHeight, this.heartSize);
+        }
+    }
+}
+
+/* ---------------- ENHANCED FIREFLIES ---------------- */
+class Firefly {
+    constructor() {
+        this.reset();
+        this.pulsePhase = Math.random() * Math.PI * 2;
+    }
+
+    reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.r = Math.random() * 2.5 + 1.5;
+        this.vx = (Math.random() - 0.5) * 0.8;
+        this.vy = (Math.random() - 0.5) * 0.8;
+    }
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+        
+        this.pulsePhase += 0.05;
+    }
+
+    draw() {
+        const pulse = Math.sin(this.pulsePhase) * 0.5 + 0.5;
+        const opacity = 0.4 + pulse * 0.5;
+        
+        ctx.fillStyle = `rgba(255, 245, 200, ${opacity})`;
+        ctx.shadowBlur = 20 + pulse * 10;
+        ctx.shadowColor = "#fff9d4";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r + pulse * 1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    }
+}
+
+/* ---------------- STARS ---------------- */
+class Star {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.r = Math.random() * 1.5;
+        this.twinklePhase = Math.random() * Math.PI * 2;
+        this.twinkleSpeed = Math.random() * 0.02 + 0.01;
+    }
+
+    update() {
+        this.twinklePhase += this.twinkleSpeed;
+    }
+
+    draw() {
+        const opacity = Math.sin(this.twinklePhase) * 0.3 + 0.5;
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+const flowers = [];
+const fireflies = Array.from({ length: 60 }, () => new Firefly());
+const stars = Array.from({ length: 100 }, () => new Star());
+
+/* ---------------- LOVE TEXT ---------------- */
+const loveMessages = [
+    "I choose you 💌",
+    "Forever yours 💕",
+    "My heart beats for you 💗",
+    "You're my everything 💖",
+    "Love you always 💝",
+    "You complete me 💓"
+];
+
+function showLoveText(x, y) {
+    const text = document.createElement("div");
+    text.className = "love";
+    text.style.left = x + "px";
+    text.style.top = y + "px";
+    text.innerText = loveMessages[Math.floor(Math.random() * loveMessages.length)];
+    document.body.appendChild(text);
+
+    setTimeout(() => text.remove(), 5000);
+}
+
+/* ---------------- FALLING PETALS ---------------- */
+function createFallingPetal(x, y) {
+    const petal = document.createElement("div");
+    petal.className = "petal";
+    petal.style.left = x + (Math.random() * 40 - 20) + "px";
+    petal.style.top = y + "px";
+    petal.style.animationDuration = (Math.random() * 3 + 4) + "s";
+    petal.style.animationDelay = Math.random() * 0.5 + "s";
+    document.body.appendChild(petal);
+
+    setTimeout(() => petal.remove(), 7000);
+}
+
+/* ---------------- FLOATING HEARTS ---------------- */
+function createFloatingHeart(x, y) {
+    const heart = document.createElement("div");
+    heart.className = "floatingHeart";
+    heart.style.left = x + "px";
+    heart.style.top = y + "px";
+    heart.innerText = ["❤️", "💕", "💖", "💗", "💓", "💝"][Math.floor(Math.random() * 6)];
+    heart.style.animationDuration = (Math.random() * 2 + 4) + "s";
+    document.body.appendChild(heart);
+
+    setTimeout(() => heart.remove(), 6000);
+}
+
+/* ---------------- INTERACTION ---------------- */
+function handleInteraction(x, y) {
+    flowers.push(new HeartFlower(x, y));
+    showLoveText(x, y);
+    
+    // Create multiple falling petals
+    for (let i = 0; i < 5; i++) {
+        setTimeout(() => createFallingPetal(x, y), i * 100);
+    }
+    
+    // Create floating heart
+    createFloatingHeart(x, y);
+}
+
+canvas.addEventListener("click", e => handleInteraction(e.clientX, e.clientY));
+canvas.addEventListener("touchstart", e => {
+    e.preventDefault();
+    const t = e.touches[0];
+    handleInteraction(t.clientX, t.clientY);
+});
+
+/* ---------------- AMBIENT PETALS ---------------- */
+setInterval(() => {
+    if (Math.random() > 0.7) {
+        createFallingPetal(Math.random() * canvas.width, -20);
+    }
+}, 1000);
+
+/* ---------------- ANIMATION ---------------- */
+function animate() {
+    // Darker trail for smoother animation
+    ctx.fillStyle = "rgba(13, 4, 22, 0.15)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw stars
+    stars.forEach(s => { s.update(); s.draw(); });
+    
+    // Draw fireflies
+    fireflies.forEach(f => { f.update(); f.draw(); });
+    
+    // Draw flowers
+    flowers.forEach(f => { f.update(); f.draw(); });
+
+    requestAnimationFrame(animate);
+}
+animate();
+</script>
+
+</body>
+</html>
